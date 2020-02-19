@@ -1,0 +1,60 @@
+export DISCONNECTED_INSTALL="Y"
+
+export CLUSTER="ocp4upi"
+
+export BASE_DOMAIN="<base_domain>"
+export MACHINE_CIDR="10.37.198.0/25"
+export MACHINE_GW="10.37.198.126"
+export MACHINE_DNS1="10.5.30.45"
+export MACHINE_DNS2="10.5.30.46"
+
+export BOOTSTRAP_DISABLE_DNS="N"
+
+export BOOTSTRAP_IP='10.37.198.20'
+export MASTER_COUNT=3
+export MASTER_IPS='"10.37.198.21", "10.37.198.22", "10.37.198.23"'
+export WORKER_COUNT=3
+export WORKER_IPS='"10.37.198.24", "10.37.198.25", "10.37.198.26"'
+
+export NAMED_ZONE="<bind/named_zone_file_name>"
+
+export HOST_SHORT=$(hostname -s)
+
+export TERRAFORM_VER="0.11.14"
+export GOVC_VER="v0.22.1"
+#export RELEASE=latest
+export RELEASE=4.2.14
+export BUILDNUMBER=$(curl -s https://mirror.openshift.com/pub/openshift-v4/clients/ocp/${RELEASE}/release.txt | grep 'Name:' | awk '{print $NF}')
+export RHCOS=$(echo $BUILDNUMBER | awk -F. '{print $1"."$2}')
+export RHCOS_TEMPLATE="rhcos-latest"
+
+export TERRAFORM="terraform_${TERRAFORM_VER}_linux_amd64.zip"
+export CLIENT="openshift-client-linux-${BUILDNUMBER}.tar.gz"
+export INSTALLER="openshift-install-linux-${BUILDNUMBER}.tar.gz"
+
+export GOVC_URL="<vpshere/vcenter_hostname>"
+export GOVC_USERNAME='<vsphere/vcenter_username>'
+export GOVC_PASSWORD='<vsphere/vcenter_password>'
+export GOVC_NETWORK='<vsphere_network>'
+export GOVC_DATACENTER='<vsphere_datacenter_name>'
+export GOVC_CLUSTER='<vsphere_cluster_name>'
+export GOVC_DATASTORE='<vsphere_datastore_name>'
+export GOVC_INSECURE=1 # If the host above uses a self-signed cert
+
+export LOCAL_REG="${HOST_SHORT}.${BASE_DOMAIN}:5000"
+export LOCAL_REPO="ocp4"
+export LOCAL_SECRET_JSON="pull-secret-2.json"
+
+export LOCAL_REG_USER="dummy"
+export LOCAL_REG_PWD="dummy"
+export SECRET=$(echo -n "${LOCAL_REG_USER}:${LOCAL_REG_PWD}" | base64 -w0)
+
+export UPSTREAM_REPO="openshift-release-dev"
+export RELEASE_NAME="ocp-release"
+export IMG_DIGEST_PREFIX="ocp-v4.0-art-dev"
+export OCP_RELEASE="4.2.14-x86_64"
+
+export PULL_SECRET='<copy your pull secret here obtained from cloud.redhat.com>'
+
+export SSH_KEY='<copy your ssh public key here>'
+
