@@ -71,7 +71,6 @@ diff ${CLUSTER}.conf /var/named/$CLUSTER.conf >/dev/null
 if [ $? -ne 0 ]; then
   [ -f /var/named/$CLUSTER.conf ] && mv /var/named/$CLUSTER.conf /var/named/$CLUSTER.conf.bak
   cp ${CLUSTER}.conf /var/named/$CLUSTER.conf
-  rm -f ${CLUSTER}.conf
   DNS_CONFIG_CHANGED="Y"
 fi
 
@@ -86,4 +85,6 @@ if [ "$DNS_CONFIG_CHANGED" = "Y" ]; then
   sed -i -e "s/^\([[:space:]]\)\(.*\)\([[:space:]]\); serial number/                    ${DT}      ; serial number/" /var/named/${NAMED_ZONE}
   systemctl restart named
 fi
+
+rm -f ${CLUSTER}.conf
 
