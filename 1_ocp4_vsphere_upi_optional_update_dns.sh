@@ -66,14 +66,23 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-[ -f /var/named/$CLUSTER.conf ] && mv /var/named/$CLUSTER.conf /var/named/$CLUSTER.conf.bak
-cp ${CLUSTER}.conf /var/named/$CLUSTER.conf
-rm -f ${CLUSTER}.conf
+DNS_CONFIG_CHANGED="N"
+diff ${CLUSTER}.conf /var/named/$CLUSTER.conf >/dev/null
+if [ $? -ne 0 ]; then
+  [ -f /var/named/$CLUSTER.conf ] && mv /var/named/$CLUSTER.conf /var/named/$CLUSTER.conf.bak
+  cp ${CLUSTER}.conf /var/named/$CLUSTER.conf
+  rm -f ${CLUSTER}.conf
+  DNS_CONFIG_CHANGED="Y"
+fi
 
 grep "^\$INCLUDE ./${CLUSTER}.conf" /var/named/${NAMED_ZONE} >/dev/null
 if [ $? -ne 0 ]; then
   cp /var/named/${NAMED_ZONE} /var/named/${NAMED_ZONE}.${DT}
   echo "\$INCLUDE ./${CLUSTER}.conf" >>/var/named/${NAMED_ZONE}
+  DNS_CONFIG_CHANGED="Y"
+fi
+
+if [ "$DNS_CONFIG_CHANGED" = "Y" ]; then
   sed -i -e "s/^\([[:space:]]\)\(.*\)\([[:space:]]\); serial number/                    ${DT}      ; serial number/" /var/named/${NAMED_ZONE}
   systemctl restart named
 fi
