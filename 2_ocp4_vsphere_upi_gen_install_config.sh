@@ -2,6 +2,11 @@
 
 source 0_ocp4_vsphere_upi_init_vars
 
+if [ ! -f ${REG_CERT}/domain.crt ]; then
+  echo "ERROR:  Attempting to generate install-config.yaml for a disconnected installation but no local registry cert file found (${REG_CERT}/domain.crt" >&2
+  exit 1
+fi
+
 [ -d $CLUSTER ] && rm -fr $CLUSTER
 mkdir $CLUSTER
 cat >$CLUSTER/install-config.yaml <<EOF
@@ -24,7 +29,7 @@ cat >>$CLUSTER/install-config.yaml <<EOF
 pullSecret: '{"auths":{"${LOCAL_REG}": {"auth": "${SECRET}","email": "noemail@localhost"}}}'
 additionalTrustBundle: |
 EOF
-sed -e 's/^/  /' ${PWD}/opt/registry/certs/domain.crt >>$CLUSTER/install-config.yaml
+sed -e 's/^/  /' ${REG_CERT}/domain.crt >>$CLUSTER/install-config.yaml
 cat >>$CLUSTER/install-config.yaml <<EOF
 imageContentSources:
 - mirrors:

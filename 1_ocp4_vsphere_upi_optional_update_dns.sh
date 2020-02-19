@@ -60,15 +60,21 @@ if [ "$BOOTSTRAP_DISABLE_DNS" = "Y" ]; then
   sed -i -e "s/^\(.*\)${BOOTSTRAP_IP}/;\1${BOOTSTRAP_IP}/g" $CLUSTER.conf
 fi
 
+systemctl status named >/dev/null 2>&1
+if [ $? -ne 0 ]; then
+  echo "WARNING:  DNS (named) service is not running on this system.  Zone file (${CLUSTER}.conf) has been generated in the current directory.  You will need to copy this file to your DNS (named) server manually and activate it using \"\$INCLUDE /var/named/${CLUSTER}.conf\" directly in the base domain zone file (${NAMED_ZONE}) found in the /var/named directory." >&2
+  exit 1
+fi
+
 [ -f /var/named/$CLUSTER.conf ] && mv /var/named/$CLUSTER.conf /var/named/$CLUSTER.conf.bak
 cp ${CLUSTER}.conf /var/named/$CLUSTER.conf
 rm -f ${CLUSTER}.conf
 
-#grep "^\$INCLUDE ./${CLUSTER}.conf" /var/named/${NAMED_ZONE} >/dev/null
-#if [ $? -ne 0 ]; then
-#  cp /var/named/${NAMED_ZONE} /var/named/${NAMED_ZONE}.${DT}
-#  echo "\$INCLUDE ./${CLUSTER}.conf" >>/var/named/${NAMED_ZONE}
-#  sed -i -e "s/^\([[:space:]]\)\(.*\)\([[:space:]]\); serial number/                    ${DT}      ; serial number/" /var/named/${NAMED_ZONE}
-#  systemctl restart named
-#fi
+grep "^\$INCLUDE ./${CLUSTER}.conf" /var/named/${NAMED_ZONE} >/dev/null
+if [ $? -ne 0 ]; then
+  cp /var/named/${NAMED_ZONE} /var/named/${NAMED_ZONE}.${DT}
+  echo "\$INCLUDE ./${CLUSTER}.conf" >>/var/named/${NAMED_ZONE}
+  sed -i -e "s/^\([[:space:]]\)\(.*\)\([[:space:]]\); serial number/                    ${DT}      ; serial number/" /var/named/${NAMED_ZONE}
+  systemctl restart named
+fi
 
