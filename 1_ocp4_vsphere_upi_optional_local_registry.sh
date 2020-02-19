@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 ### THIS STEP IS ONLY REQUIRED IF YOU PLAN TO PERFORM A DISCONNECTED INSTALLATION ###
 

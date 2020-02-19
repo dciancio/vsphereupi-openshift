@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 ##### Make sure to have DRS enabled to allow for creation of resource pool for the cluster
 

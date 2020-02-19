@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 #DELETE THE BOOTSTRAP'S DNS RECORDS AND INFORM THE INSTALLER TO PROCEED
 #Note, the remaining api and api-int records should continue pointing towards the control-plane servers.
