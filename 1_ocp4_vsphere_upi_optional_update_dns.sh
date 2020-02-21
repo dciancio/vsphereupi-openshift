@@ -2,8 +2,6 @@
 
 source 0_ocp4_vsphere_upi_init_vars
 
-DT=$(date +%Y%m%d%H%M%S)
-
 cat >$CLUSTER.conf <<EOF
 \$ORIGIN apps.${CLUSTER}.${BASE_DOMAIN}.
 EOF
@@ -74,15 +72,18 @@ if [ $? -ne 0 ]; then
   DNS_CONFIG_CHANGED="Y"
 fi
 
+NUM=$(awk '/serial number/ {print $1}' /var/named/${NAMED_ZONE})
 grep "^\$INCLUDE ./${CLUSTER}.conf" /var/named/${NAMED_ZONE} >/dev/null
 if [ $? -ne 0 ]; then
-  cp /var/named/${NAMED_ZONE} /var/named/${NAMED_ZONE}.${DT}
+  cp /var/named/${NAMED_ZONE} /var/named/${NAMED_ZONE}.bak.${NUM}
   echo "\$INCLUDE ./${CLUSTER}.conf" >>/var/named/${NAMED_ZONE}
   DNS_CONFIG_CHANGED="Y"
 fi
 
 if [ "$DNS_CONFIG_CHANGED" = "Y" ]; then
-  sed -i -e "s/^\([[:space:]]\)\(.*\)\([[:space:]]\); serial number/                    ${DT}      ; serial number/" /var/named/${NAMED_ZONE}
+  cp /var/named/${NAMED_ZONE} /var/named/${NAMED_ZONE}.bak1.${NUM}
+  NUM=$(($NUM + 1))
+  sed -i -e "s/^\([[:space:]]\)\(.*\)\([[:space:]]\); serial number/                                ${NUM}      ; serial number/" /var/named/${NAMED_ZONE}
   systemctl restart named
 fi
 

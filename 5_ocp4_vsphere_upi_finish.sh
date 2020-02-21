@@ -7,5 +7,4 @@ terraform apply -auto-approve -var 'bootstrap_complete=true'
 [ -d ~/.kube ] && rm -fr ~/.kube
 mkdir ~/.kube
 cp ../../../../$CLUSTER/auth/kubeconfig ~/.kube/config
-oc patch configs.imageregistry.operator.openshift.io cluster --type merge --patch '{"spec":{"storage":{"emptyDir":{}}}}'
 popd
