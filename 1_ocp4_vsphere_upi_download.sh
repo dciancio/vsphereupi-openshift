@@ -8,6 +8,7 @@ echo "Downloading release $BUILDNUMBER..."
 
 curl -s -O https://releases.hashicorp.com/terraform/${TERRAFORM_VER}/${TERRAFORM}
 unzip ${TERRAFORM}
+rm -f /usr/local/bin/terraform
 cp terraform /usr/local/bin
 rm -f terraform 
 rm -f ${TERRAFORM}
@@ -21,6 +22,7 @@ yum install http://fedora-epel.mirror.iweb.com/7/x86_64/Packages/j/jq-1.6-1.el7.
 tar xzvf ${CLIENT}
 [ -f $INSTALLER ] || curl -s -O https://mirror.openshift.com/pub/openshift-v4/clients/ocp/${RELEASE}/${INSTALLER}
 tar xzvf ${INSTALLER}
+rm -f /usr/local/bin/oc /usr/local/bin/kubectl /usr/local/bin/openshift-install
 cp oc kubectl openshift-install /usr/local/bin
 chmod +x /usr/local/bin/oc /usr/local/bin/kubectl /usr/local/bin/openshift-install
 rm -f oc kubectl openshift-install README.md

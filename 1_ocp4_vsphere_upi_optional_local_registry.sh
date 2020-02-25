@@ -38,6 +38,7 @@ docker.io/library/registry:2
 podman stop poc-registry
 podman start poc-registry
 
+rm -f /etc/pki/ca-trust/source/anchors/domain.crt
 cp ${REG_CERT}/domain.crt /etc/pki/ca-trust/source/anchors/
 update-ca-trust extract
 
