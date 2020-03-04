@@ -20,11 +20,11 @@ for i in $(seq 1 ${MASTER_COUNT}); do
   echo "_etcd-server-ssl._tcp SRV 0 10 2380 etcd-${COUNT}" >>${CLUSTER}.conf
 done
 
-echo "bootstrap-0 A ${BOOTSTRAP_IP}" >>${CLUSTER}.conf
+echo "${BOOTSTRAP_PREFIX}-0 A ${BOOTSTRAP_IP}" >>${CLUSTER}.conf
 
 COUNT=0
 for i in $(echo $MASTER_IPS | tr -d '",'); do
-  echo "control-plane-${COUNT} A $i" >>${CLUSTER}.conf
+  echo "${MASTER_PREFIX}-${COUNT} A $i" >>${CLUSTER}.conf
   COUNT=$(($COUNT + 1))
 done
 
@@ -48,7 +48,7 @@ done
 
 COUNT=0
 for i in $(echo $WORKER_IPS | tr -d '",'); do
-  echo "compute-${COUNT} A $i" >>${CLUSTER}.conf
+  echo "${WORKER_PREFIX}-${COUNT} A $i" >>${CLUSTER}.conf
   COUNT=$(($COUNT + 1))
 done
 

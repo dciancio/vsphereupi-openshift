@@ -36,6 +36,10 @@ sed -i -e '/module "dns"/i \
 \/*' installer/upi/vsphere/main.tf
 sed -i -e '$a\
 *\/' installer/upi/vsphere/main.tf
+sed -i -e "s|name             = \"bootstrap\"|name             = \"${BOOTSTRAP_PREFIX}\"|" installer/upi/vsphere/main.tf
+sed -i -e "s|name             = \"control-plane\"|name             = \"${MASTER_PREFIX}\"|" installer/upi/vsphere/main.tf
+sed -i -e "s|name             = \"compute\"|name             = \"${WORKER_PREFIX}\"|" installer/upi/vsphere/main.tf
+
 pushd installer/upi/vsphere
 terraform init
 terraform apply -auto-approve
