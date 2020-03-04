@@ -11,5 +11,6 @@ if [ $? -ne 0 ]; then
 else
   rm -f /var/www/html/${CLUSTER}-bootstrap.ign
   cp ${CLUSTER}/bootstrap.ign /var/www/html/${CLUSTER}-bootstrap.ign
+  chmod 644 /var/www/html/${CLUSTER}-*.ign
 fi
 
