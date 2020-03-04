@@ -9,8 +9,10 @@ if [ $? -ne 0 ]; then
   echo "WARNING:  HTTPD service is not running on this system.  The bootstrap.ign file has been generated but will need to manually be copied to the HTTPD server." >&2
   exit 1
 else
-  rm -f /var/www/html/${CLUSTER}-bootstrap.ign
+  rm -f /var/www/html/${CLUSTER}-*.ign
   cp ${CLUSTER}/bootstrap.ign /var/www/html/${CLUSTER}-bootstrap.ign
+  cp ${CLUSTER}/master.ign /var/www/html/${CLUSTER}-master.ign
+  cp ${CLUSTER}/worker.ign /var/www/html/${CLUSTER}-worker.ign
   chmod 644 /var/www/html/${CLUSTER}-*.ign
 fi
 
