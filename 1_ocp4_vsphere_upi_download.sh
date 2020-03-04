@@ -33,8 +33,11 @@ curl -s -L https://github.com/vmware/govmomi/releases/download/${GOVC_VER}/govc_
 chmod +x /usr/local/bin/govc
 
 # Download RHCOS image
-curl -s -O https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/${RHCOS}/latest/rhcos-${RHCOS}.0-x86_64-vmware.ova
-govc vm.destroy /${GOVC_DATACENTER}/vm/${RHCOS_TEMPLATE}
-govc import.ova -name=${RHCOS_TEMPLATE} rhcos-${RHCOS}.0-x86_64-vmware.ova
-rm -f rhcos-${RHCOS}.0-x86_64-vmware.ova
+for i in $(curl -s --list-only https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/${RHCOS}/latest/ | egrep "\-vmware" | grep href | sed 's/.*href="//' | sed 's/".*//' | grep '^[a-zA-Z].*'); do
+  curl -s -O https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/${RHCOS}/latest/$i
+  govc vm.destroy /${GOVC_DATACENTER}/vm/${RHCOS_TEMPLATE}
+  govc import.ova -name=${RHCOS_TEMPLATE} $i
+done
+
+rm -f rhcos-*
 
