@@ -2,7 +2,7 @@
 
 source 0_ocp4_vsphere_upi_init_vars
 
-openshift-install --dir $CLUSTER create ignition-configs
+openshift-install --dir $CLUSTER create ignition-configs --log-level debug
 
 systemctl status httpd >/dev/null 2>&1
 if [ $? -ne 0 ]; then
