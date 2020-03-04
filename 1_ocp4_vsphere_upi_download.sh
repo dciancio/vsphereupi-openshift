@@ -38,6 +38,5 @@ for i in $(curl -s --list-only https://mirror.openshift.com/pub/openshift-v4/dep
   govc vm.destroy /${GOVC_DATACENTER}/vm/${RHCOS_TEMPLATE}
   govc import.ova -name=${RHCOS_TEMPLATE} $i
 done
-
 rm -f rhcos-*
 
