@@ -17,6 +17,6 @@ for i in $(seq 1 ${WORKER_COUNT}); do
   govc vm.destroy /${GOVC_DATACENTER}/vm/${CLUSTER}/${WORKER_PREFIX}-${COUNT}
 done
 
-govc folder.delete /${GOVC_DATACENTER}/vm/${CLUSTER}
-govc pool.delete   /${GOVC_DATACENTER}/host/${GOVC_CLUSTER}/Resources/${CLUSTER}
+govc object.destroy /${GOVC_DATACENTER}/vm/${CLUSTER}
+govc pool.destroy   /${GOVC_DATACENTER}/host/${GOVC_CLUSTER}/Resources/${CLUSTER}
 
