@@ -51,6 +51,11 @@ else
     echo "ERROR:  Bootstrap process failed!  Please investigate bootkube.service log on bootstrap node." >&2
   else
     terraform apply -auto-approve -var 'bootstrap_complete=true'
+    echo
+    echo "# Delete the bootstrap node DNS record, including its corresponding api and api-int records once the VM has been destroyed."
+    echo "# If you are using a named service for DNS, you can set  BOOTSTRAP_DISABLE_DNS="Y" in 0_ocp4_vsphere_upi_init_vars config file and re-run script"
+    echo "# 1_ocp4_vsphere_upi_optional_update_dns.sh.  This will generate and push a new DNS config which will disable/remove the bootstrap server from DNS."
+    echo
   fi
 fi
 popd

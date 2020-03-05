@@ -47,7 +47,7 @@ NETMASK=$(ipcalc -m ${MACHINE_CIDR} | awk -F= '{print $2}')
 
 # Add bootstrap entries
 cat >>default <<EOF
-LABEL ${CLUSTER}-${BOOTSTRAP_PREFIX}
+LABEL ${CLUSTER}-${BOOTSTRAP_PREFIX}-0
     KERNEL rhcos/${KERNEL}
     APPEND rd.neednet=1 initrd=rhcos/${INITRD} console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.install_dev=sda coreos.inst.image_url=http://${HOST_SHORT}.${BASE_DOMAIN}/${IMAGE} coreos.inst.ignition_url=http://${HOST_SHORT}.${BASE_DOMAIN}/${CLUSTER}-bootstrap.ign ip=${BOOTSTRAP_IP}::${MACHINE_GW}:${NETMASK}:${BOOTSTRAP_PREFIX}-0.${CLUSTER}.${BASE_DOMAIN}:ens192:none nameserver=${MACHINE_DNS1}
 EOF
@@ -58,7 +58,7 @@ for i in $(echo $MASTER_IPS | tr -d '",'); do
 cat >>default <<EOF
 LABEL ${CLUSTER}-${MASTER_PREFIX}-${COUNT}
     KERNEL rhcos/${KERNEL}
-    APPEND rd.neednet=1 initrd=rhcos/${INITRD} console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.install_dev=sda coreos.inst.image_url=http://${HOST_SHORT}.${BASE_DOMAIN}/${IMAGE} coreos.inst.ignition_url=http://${HOST_SHORT}.${BASE_DOMAIN}/${CLUSTER}-master.ign ip=${$i}::${MACHINE_GW}:${NETMASK}:${MASTER_PREFIX}-${COUNT}.${CLUSTER}.${BASE_DOMAIN}:ens192:none nameserver=${MACHINE_DNS1}
+    APPEND rd.neednet=1 initrd=rhcos/${INITRD} console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.install_dev=sda coreos.inst.image_url=http://${HOST_SHORT}.${BASE_DOMAIN}/${IMAGE} coreos.inst.ignition_url=http://${HOST_SHORT}.${BASE_DOMAIN}/${CLUSTER}-master.ign ip=${i}::${MACHINE_GW}:${NETMASK}:${MASTER_PREFIX}-${COUNT}.${CLUSTER}.${BASE_DOMAIN}:ens192:none nameserver=${MACHINE_DNS1}
 EOF
 COUNT=$(($COUNT + 1))
 done
@@ -69,7 +69,7 @@ for i in $(echo $WORKER_IPS | tr -d '",'); do
 cat >>default <<EOF
 LABEL ${CLUSTER}-${WORKER_PREFIX}-${COUNT}
     KERNEL rhcos/${KERNEL}
-    APPEND rd.neednet=1 initrd=rhcos/${INITRD} console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.install_dev=sda coreos.inst.image_url=http://${HOST_SHORT}.${BASE_DOMAIN}/${IMAGE} coreos.inst.ignition_url=http://${HOST_SHORT}.${BASE_DOMAIN}/${CLUSTER}-worker.ign ip=${$i}::${MACHINE_GW}:${NETMASK}:${WORKER_PREFIX}-${COUNT}.${CLUSTER}.${BASE_DOMAIN}:ens192:none nameserver=${MACHINE_DNS1}
+    APPEND rd.neednet=1 initrd=rhcos/${INITRD} console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.install_dev=sda coreos.inst.image_url=http://${HOST_SHORT}.${BASE_DOMAIN}/${IMAGE} coreos.inst.ignition_url=http://${HOST_SHORT}.${BASE_DOMAIN}/${CLUSTER}-worker.ign ip=${i}::${MACHINE_GW}:${NETMASK}:${WORKER_PREFIX}-${COUNT}.${CLUSTER}.${BASE_DOMAIN}:ens192:none nameserver=${MACHINE_DNS1}
 EOF
 COUNT=$(($COUNT + 1))
 done
@@ -83,5 +83,23 @@ else
   mv /var/lib/tftpboot/pxelinux.cfg/default /var/lib/tftpboot/pxelinux.cfg/default.bak
   cp default /var/lib/tftpboot/pxelinux.cfg
   rm -f default
+fi
+
+echo
+echo "Launch VM console and kick off the pxeboot for each node"
+echo
+echo "Press any key to continue..."
+pause
+
+openshift-install --dir ../../../../$CLUSTER wait-for bootstrap-complete --log-level debug
+if [ $? -ne 0 ]; then
+  echo "ERROR:  Bootstrap process failed!  Please investigate bootkube.service log on bootstrap node." >&2
+else
+  terraform apply -auto-approve -var 'bootstrap_complete=true'
+  echo
+  echo "# Delete the bootstrap node DNS record, including its corresponding api and api-int records once the VM has been destroyed."
+  echo "# If you are using a named service for DNS, you can set  BOOTSTRAP_DISABLE_DNS="Y" in 0_ocp4_vsphere_upi_init_vars config file and re-run script"
+  echo "# 1_ocp4_vsphere_upi_optional_update_dns.sh.  This will generate and push a new DNS config which will disable/remove the bootstrap server from DNS."
+  echo
 fi
 
