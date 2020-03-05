@@ -32,11 +32,33 @@ rm -f ${CLIENT} ${INSTALLER}
 curl -s -L https://github.com/vmware/govmomi/releases/download/${GOVC_VER}/govc_linux_amd64.gz | gunzip > /usr/local/bin/govc
 chmod +x /usr/local/bin/govc
 
-# Download RHCOS image
+# Download RHCOS ova image
 for i in $(curl -s --list-only https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/${RHCOS}/latest/ | egrep "\-vmware" | grep href | sed 's/.*href="//' | sed 's/".*//' | grep '^[a-zA-Z].*'); do
   curl -s -O https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/${RHCOS}/latest/$i
   govc vm.destroy /${GOVC_DATACENTER}/vm/${RHCOS_TEMPLATE}
   govc import.ova -name=${RHCOS_TEMPLATE} $i
 done
 rm -f rhcos-*
+
+# Download RHCOS bare-metal image
+for i in $(curl -s --list-only https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/${RHCOS}/latest/ | egrep "\-installer|\-metal" | grep href | sed 's/.*href="//' | sed 's/".*//' | grep '^[a-zA-Z].*'); do
+  curl -s -O https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/${RHCOS}/latest/$i
+done
+if [ ! -d /var/www/html ]; then
+  echo "WARNING:  /var/www/html does not exist!  Please make sure to install httpd service on this system.  The rhcos installer files will need to be copied to /var/www/html directory manually once HTTPD is installed." >&2
+  exit 1
+else
+  rm -f /var/www/html/rhcos-*
+  cp rhcos-* /var/www/html
+  chmod 644 /var/www/html/rhcos-*
+  rm -f rhcos-*
+  if [ ! -d /var/lib/tftpboot ]; then
+    echo "WARNING:  /var/lib/tftpboot does not exist!  Please make sure to install tftp-server on this system.  The rhcos installer kernel and image files will need to be copied to /var/lib/tftpboot directory manually once tftp-server is installed." >&2
+    exit 1
+  else
+    rm -fr /var/lib/tftpboot/rhcos
+    mkdir -p /var/lib/tftpboot/rhcos
+    cp /var/www/html/rhcos-*-installer-initramfs.img /var/www/html/rhcos-*-installer-kernel /var/lib/tftpboot/rhcos
+  fi
+fi
 
