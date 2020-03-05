@@ -4,9 +4,8 @@ source 0_ocp4_vsphere_upi_init_vars
 
 openshift-install --dir $CLUSTER create ignition-configs --log-level debug
 
-systemctl status httpd >/dev/null 2>&1
-if [ $? -ne 0 ]; then
-  echo "WARNING:  HTTPD service is not running on this system.  The bootstrap.ign file has been generated but will need to manually be copied to the HTTPD server." >&2
+if [ ! -d /var/www/html ]; then
+  echo "WARNING:  /var/www/html does not exist!  Please make sure to install httpd service on this system.  The ignition files will need to be copied to /var/www/html directory manually once HTTPD is installed." >&2
   exit 1
 else
   rm -f /var/www/html/${CLUSTER}-*.ign
