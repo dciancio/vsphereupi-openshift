@@ -43,6 +43,16 @@ sed -i -e "s|name             = \"compute\"|name             = \"${WORKER_PREFIX
 pushd installer/upi/vsphere
 terraform init
 terraform apply -auto-approve
-openshift-install --dir ../../../../$CLUSTER wait-for bootstrap-complete --log-level debug
+if [ $? -ne 0 ]; then
+  echo "ERROR:  Terraform resource creation step failed!  Please check the terraform output for more details." >&2
+else
+  openshift-install --dir ../../../../$CLUSTER wait-for bootstrap-complete --log-level debug
+  if [ $? -ne 0 ]; then
+    echo "ERROR:  Bootstrap process failed!  Please investigate bootkube.service log on bootstrap node." >&2
+  else
+    terraform apply -auto-approve -var 'bootstrap_complete=true'
+  fi
+fi
 popd
 popd
+
