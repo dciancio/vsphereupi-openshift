@@ -4,6 +4,8 @@ export CLUSTER="<cluster_name>"
 
 export BASE_DOMAIN="<base_domain>"
 export MACHINE_CIDR="10.37.198.0/25"
+export MACHINE_NM=$(ipcalc -m ${MACHINE_CIDR} | awk -F= '{print $2}')
+export MACHINE_PREFIX=$(ipcalc -p ${MACHINE_CIDR} | awk -F= '{print $2}')
 export MACHINE_GW="10.37.198.126"
 export MACHINE_DNS1="10.5.30.45"
 export MACHINE_DNS2="10.5.30.46"
@@ -63,4 +65,66 @@ export OCP_RELEASE="${RELEASE}-x86_64"
 export PULL_SECRET='<copy your pull secret here obtained from cloud.redhat.com>'
 
 export SSH_KEY='<copy your ssh public key here>'
+
+gen_append_ign_file ()
+{
+
+ROLE=$1
+MACHINE_NAME=$2
+MACHINE_IP=$3
+
+cat >${MACHINE_NAME}.yaml.$$ <<EOF
+ignition:
+  config:
+    append:
+      - source: http://${HOST_SHORT}.${BASE_DOMAIN}/${CLUSTER}-${ROLE}.ign
+storage:
+  files:
+    - path: /etc/hostname
+      filesystem: root
+      contents:
+        inline: ${MACHINE_NAME}
+      mode: 0644
+      user:
+        id: 0
+      group:
+        id: 0
+    - path: /etc/sysconfig/network-scripts/ifcfg-ens192
+      filesystem: root
+      contents:
+        inline: |
+          TYPE=Ethernet
+          BOOTPROTO=none
+          NAME=ens192
+          DEVICE=ens192
+          ONBOOT=yes
+          IPADDR=${MACHINE_IP}
+          PREFIX=${MACHINE_PREFIX}
+          GATEWAY=${MACHINE_GW}
+          DOMAIN=${CLUSTER}.${BASE_DOMAIN}
+          DNS1=${MACHINE_DNS1}
+          DNS2=${MACHINE_DNS2}
+      mode: 0644
+      user:
+        id: 0
+      group:
+        id: 0
+
+systemd:
+  units:
+    - name: restart.service
+      enabled: true
+      contents: |
+        [Unit]
+        ConditionFirstBoot=yes
+        [Service]
+        Type=idle
+        ExecStart=/sbin/reboot
+        [Install]
+        WantedBy=multi-user.target
+EOF
+ct --in-file ${MACHINE_NAME}.yaml.$$ --out-file /var/www/html/${CLUSTER}-${MACHINE_NAME}-append.ign
+rm -f ${MACHINE_NAME}.yaml.$$
+
+}
 

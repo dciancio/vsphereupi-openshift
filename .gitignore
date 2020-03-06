@@ -1,4 +1,5 @@
 0_ocp4_vsphere_upi_init_vars
+0_ocp4_vsphere_upi_init_vars.bak
 .terraform/*
 *.tfplan
 *.tfstate

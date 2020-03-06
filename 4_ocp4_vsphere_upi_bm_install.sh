@@ -6,6 +6,62 @@
 
 source 0_ocp4_vsphere_upi_init_vars
 
+KERNEL=$(basename `ls /var/lib/tftpboot/rhcos/*-installer-kernel | sort | tail -1`)
+INITRD=$(basename `ls /var/lib/tftpboot/rhcos/*-installer-initramfs.img | sort | tail -1`)
+IMAGE=$(basename `ls /var/www/html/*-metal-bios* | sort | tail -1`)
+
+# Generate PXE boot file
+cat >default <<EOF
+# Explicitly set default label to an unknown value.  Force user to enter a correct one below.
+DEFAULT dummy
+TIMEOUT 20
+PROMPT 0
+
+EOF
+
+# Add bootstrap entries to PXE boot file
+gen_append_ign_file bootstrap ${BOOTSTRAP_PREFIX}-0 ${BOOTSTRAP_IP}
+cat >>default <<EOF
+LABEL ${CLUSTER}-${BOOTSTRAP_PREFIX}-0
+    KERNEL rhcos/${KERNEL}
+    APPEND rd.neednet=1 initrd=rhcos/${INITRD} console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.install_dev=sda coreos.inst.image_url=http://${HOST_SHORT}.${BASE_DOMAIN}/${IMAGE} coreos.inst.ignition_url=http://${HOST_SHORT}.${BASE_DOMAIN}/${CLUSTER}-${BOOTSTRAP_PREFIX}-0-append.ign ip=${BOOTSTRAP_IP}::${MACHINE_GW}:${MACHINE_NM}:${BOOTSTRAP_PREFIX}-0.${CLUSTER}.${BASE_DOMAIN}:ens192:none nameserver=${MACHINE_DNS1}
+EOF
+
+# Add master entries to PXE boot file
+COUNT=0
+for i in $(echo $MASTER_IPS | tr -d '",'); do
+gen_append_ign_file master ${MASTER_PREFIX}-${COUNT} ${i}
+cat >>default <<EOF
+LABEL ${CLUSTER}-${MASTER_PREFIX}-${COUNT}
+    KERNEL rhcos/${KERNEL}
+    APPEND rd.neednet=1 initrd=rhcos/${INITRD} console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.install_dev=sda coreos.inst.image_url=http://${HOST_SHORT}.${BASE_DOMAIN}/${IMAGE} coreos.inst.ignition_url=http://${HOST_SHORT}.${BASE_DOMAIN}/${CLUSTER}-${MASTER_PREFIX}-${COUNT}-append.ign ip=${i}::${MACHINE_GW}:${MACHINE_NM}:${MASTER_PREFIX}-${COUNT}.${CLUSTER}.${BASE_DOMAIN}:ens192:none nameserver=${MACHINE_DNS1}
+EOF
+COUNT=$(($COUNT + 1))
+done
+
+# Add worker entries to PXE boot file
+COUNT=0
+for i in $(echo $WORKER_IPS | tr -d '",'); do
+gen_append_ign_file worker ${WORKER_PREFIX}-${COUNT} ${i}
+cat >>default <<EOF
+LABEL ${CLUSTER}-${WORKER_PREFIX}-${COUNT}
+    KERNEL rhcos/${KERNEL}
+    APPEND rd.neednet=1 initrd=rhcos/${INITRD} console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.install_dev=sda coreos.inst.image_url=http://${HOST_SHORT}.${BASE_DOMAIN}/${IMAGE} coreos.inst.ignition_url=http://${HOST_SHORT}.${BASE_DOMAIN}/${CLUSTER}-${WORKER_PREFIX}-${COUNT}-append.ign ip=${i}::${MACHINE_GW}:${MACHINE_NM}:${WORKER_PREFIX}-${COUNT}.${CLUSTER}.${BASE_DOMAIN}:ens192:none nameserver=${MACHINE_DNS1}
+EOF
+COUNT=$(($COUNT + 1))
+done
+
+# Copy generated PXE boot file to /var/lib/tftpboot/pxelinux.cfg
+if [ ! -d /var/lib/tftpboot/pxelinux.cfg ]; then
+  echo "WARNING:  /var/lib/tftpboot/pxelinux.cfg does not exist!  Please make sure to create the directory on this system and copy the generated default pxe boot file to it." >&2
+  exit 1
+else
+  mv /var/lib/tftpboot/pxelinux.cfg/default /var/lib/tftpboot/pxelinux.cfg/default.bak
+  cp default /var/lib/tftpboot/pxelinux.cfg
+  rm -f default
+fi
+
+# Create resource pool and folder for cluster
 govc pool.create   /${GOVC_DATACENTER}/host/${GOVC_CLUSTER}/Resources/${CLUSTER}
 govc folder.create /${GOVC_DATACENTER}/vm/${CLUSTER}
 
@@ -30,72 +86,17 @@ for i in $(seq 1 ${WORKER_COUNT}); do
   govc vm.power -on=true /${GOVC_DATACENTER}/vm/${CLUSTER}/${WORKER_PREFIX}-${COUNT}
 done
 
-# Generate PXE boot file
-
-cat >default <<EOF
-# Explicitly set default label to an unknown value.  Force user to enter a correct one below.
-DEFAULT dummy
-TIMEOUT 20
-PROMPT 0
-
-EOF
-
-KERNEL=$(basename `ls /var/lib/tftpboot/rhcos/*-installer-kernel | sort | tail -1`)
-INITRD=$(basename `ls /var/lib/tftpboot/rhcos/*-installer-initramfs.img | sort | tail -1`)
-IMAGE=$(basename `ls /var/www/html/*-metal-bios* | sort | tail -1`)
-NETMASK=$(ipcalc -m ${MACHINE_CIDR} | awk -F= '{print $2}')
-
-# Add bootstrap entries
-cat >>default <<EOF
-LABEL ${CLUSTER}-${BOOTSTRAP_PREFIX}-0
-    KERNEL rhcos/${KERNEL}
-    APPEND rd.neednet=1 initrd=rhcos/${INITRD} console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.install_dev=sda coreos.inst.image_url=http://${HOST_SHORT}.${BASE_DOMAIN}/${IMAGE} coreos.inst.ignition_url=http://${HOST_SHORT}.${BASE_DOMAIN}/${CLUSTER}-bootstrap.ign ip=${BOOTSTRAP_IP}::${MACHINE_GW}:${NETMASK}:${BOOTSTRAP_PREFIX}-0.${CLUSTER}.${BASE_DOMAIN}:ens192:none nameserver=${MACHINE_DNS1}
-EOF
-
-# Add master entries
-COUNT=0
-for i in $(echo $MASTER_IPS | tr -d '",'); do
-cat >>default <<EOF
-LABEL ${CLUSTER}-${MASTER_PREFIX}-${COUNT}
-    KERNEL rhcos/${KERNEL}
-    APPEND rd.neednet=1 initrd=rhcos/${INITRD} console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.install_dev=sda coreos.inst.image_url=http://${HOST_SHORT}.${BASE_DOMAIN}/${IMAGE} coreos.inst.ignition_url=http://${HOST_SHORT}.${BASE_DOMAIN}/${CLUSTER}-master.ign ip=${i}::${MACHINE_GW}:${NETMASK}:${MASTER_PREFIX}-${COUNT}.${CLUSTER}.${BASE_DOMAIN}:ens192:none nameserver=${MACHINE_DNS1}
-EOF
-COUNT=$(($COUNT + 1))
-done
-
-# Add worker entries
-COUNT=0
-for i in $(echo $WORKER_IPS | tr -d '",'); do
-cat >>default <<EOF
-LABEL ${CLUSTER}-${WORKER_PREFIX}-${COUNT}
-    KERNEL rhcos/${KERNEL}
-    APPEND rd.neednet=1 initrd=rhcos/${INITRD} console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.install_dev=sda coreos.inst.image_url=http://${HOST_SHORT}.${BASE_DOMAIN}/${IMAGE} coreos.inst.ignition_url=http://${HOST_SHORT}.${BASE_DOMAIN}/${CLUSTER}-worker.ign ip=${i}::${MACHINE_GW}:${NETMASK}:${WORKER_PREFIX}-${COUNT}.${CLUSTER}.${BASE_DOMAIN}:ens192:none nameserver=${MACHINE_DNS1}
-EOF
-COUNT=$(($COUNT + 1))
-done
-
-# Copy generated PXE boot file to /var/lib/tftpboot/pxelinux.cfg
-
-if [ ! -d /var/lib/tftpboot/pxelinux.cfg ]; then
-  echo "WARNING:  /var/lib/tftpboot/pxelinux.cfg does not exist!  Please make sure to create the directory on this system and copy the generated default pxe boot file to it." >&2
-  exit 1
-else
-  mv /var/lib/tftpboot/pxelinux.cfg/default /var/lib/tftpboot/pxelinux.cfg/default.bak
-  cp default /var/lib/tftpboot/pxelinux.cfg
-  rm -f default
-fi
-
 echo
-echo "Launch VM console and kick off the pxeboot for each node"
+echo "Launch the VM console and kick off the pxeboot process on each node"
 echo
-echo "Press any key to continue..."
+echo
+read -p "Press [Enter] key to continue once all nodes have been pxeboot'ed..."
 pause
 
-openshift-install --dir ../../../../$CLUSTER wait-for bootstrap-complete --log-level debug
+openshift-install --dir $CLUSTER wait-for bootstrap-complete --log-level debug
 if [ $? -ne 0 ]; then
   echo "ERROR:  Bootstrap process failed!  Please investigate bootkube.service log on bootstrap node." >&2
 else
-  terraform apply -auto-approve -var 'bootstrap_complete=true'
   echo
   echo "# Delete the bootstrap node DNS record, including its corresponding api and api-int records once the VM has been destroyed."
   echo "# If you are using a named service for DNS, you can set  BOOTSTRAP_DISABLE_DNS="Y" in 0_ocp4_vsphere_upi_init_vars config file and re-run script"

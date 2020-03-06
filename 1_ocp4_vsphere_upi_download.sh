@@ -4,8 +4,14 @@ source 0_ocp4_vsphere_upi_init_vars
 
 echo "Downloading release $BUILDNUMBER..."
 
-# Download terraform
+# Download coreos-ct
+curl -s -O https://github.com/coreos/container-linux-config-transpiler/releases/download/v0.9.0/ct-v0.9.0-x86_64-unknown-linux-gnu
+rm -f /usr/local/bin/ct
+cp ct-v0.9.0-x86_64-unknown-linux-gnu /usr/local/bin/ct
+chmod +x /usr/local/bin/ct
+rm -f ct-v0.9.0-x86_64-unknown-linux-gnu
 
+# Download terraform
 curl -s -O https://releases.hashicorp.com/terraform/${TERRAFORM_VER}/${TERRAFORM}
 unzip ${TERRAFORM}
 rm -f /usr/local/bin/terraform
