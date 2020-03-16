@@ -91,12 +91,13 @@ echo "Launch the VM console and kick off the pxeboot process on each node"
 echo
 echo
 read -p "Press [Enter] key to continue once all nodes have been pxeboot'ed..."
-pause
 
 openshift-install --dir $CLUSTER wait-for bootstrap-complete --log-level debug
 if [ $? -ne 0 ]; then
   echo "ERROR:  Bootstrap process failed!  Please investigate bootkube.service log on bootstrap node." >&2
 else
+  echo "INFO:   Bootstrap process completed successfully!  Destroying bootstrap node..."
+  govc vm.destroy /${GOVC_DATACENTER}/vm/${CLUSTER}/${BOOTSTRAP_PREFIX}-0
   echo
   echo "# Delete the bootstrap node DNS record, including its corresponding api and api-int records once the VM has been destroyed."
   echo "# If you are using a named service for DNS, you can set  BOOTSTRAP_DISABLE_DNS="Y" in 0_ocp4_vsphere_upi_init_vars config file and re-run script"
