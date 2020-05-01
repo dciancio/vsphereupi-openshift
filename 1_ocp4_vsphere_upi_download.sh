@@ -47,7 +47,7 @@ done
 rm -f rhcos-${RHCOS}*
 
 # Download RHCOS bare-metal image
-for i in $(curl -s --list-only https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/${RHCOS}/latest/ | egrep "\-installer|\-metal.raw.gz|\-metal-bios.raw.gz" | grep href | sed 's/.*href="//' | sed 's/".*//' | grep '^[a-zA-Z].*'); do
+for i in $(curl -s --list-only https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/${RHCOS}/latest/ | egrep "\-installer|\-metal" | grep href | sed 's/.*href="//' | sed 's/".*//' | grep '^[a-zA-Z].*'); do
   curl -s -O https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/${RHCOS}/latest/$i
 done
 if [ ! -d /var/www/html ]; then
@@ -64,7 +64,7 @@ else
   else
     mkdir -p /var/lib/tftpboot/rhcos
     rm -f /var/lib/tftpboot/rhcos/rhcos-${RHCOS}*
-    cp /var/www/html/rhcos-${RHCOS}*-installer-initramfs.img /var/www/html/rhcos-${RHCOS}*-installer-kernel /var/lib/tftpboot/rhcos
+    cp /var/www/html/rhcos-${RHCOS}*-installer-initramfs*.img /var/www/html/rhcos-${RHCOS}*-installer-kernel* /var/lib/tftpboot/rhcos
   fi
 fi
 

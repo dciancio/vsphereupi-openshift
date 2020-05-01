@@ -6,8 +6,8 @@
 
 source 0_ocp4_vsphere_upi_init_vars
 
-KERNEL=$(basename `ls /var/lib/tftpboot/rhcos/rhcos-${RHCOS}*-installer-kernel | sort | tail -1`)
-INITRD=$(basename `ls /var/lib/tftpboot/rhcos/rhcos-${RHCOS}*-installer-initramfs.img | sort | tail -1`)
+KERNEL=$(basename `ls /var/lib/tftpboot/rhcos/rhcos-${RHCOS}*-installer-kernel* | sort | tail -1`)
+INITRD=$(basename `ls /var/lib/tftpboot/rhcos/rhcos-${RHCOS}*-installer-initramfs* | sort | tail -1`)
 IMAGE=$(basename `ls /var/www/html/rhcos-${RHCOS}*-metal* | sort | tail -1`)
 
 # Generate PXE boot file
