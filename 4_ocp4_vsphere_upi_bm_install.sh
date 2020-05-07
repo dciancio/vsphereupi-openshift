@@ -19,22 +19,34 @@ PROMPT 0
 
 EOF
 
+APPENDBASE="rd.neednet=1 initrd=rhcos/${INITRD} console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.install_dev=sda coreos.inst.image_url=http://${HOST_SHORT}.${BASE_DOMAIN}/${IMAGE} coreos.no_persist_ip=1"
+
 # Add bootstrap entries to PXE boot file
 gen_append_ign_file bootstrap ${BOOTSTRAP_PREFIX}-0 ${BOOTSTRAP_IP}
+if [ "$BM_BOOT_STATIC" = "Y" ]; then
+  APPENDCONF=${APPENDBASE}" coreos.inst.ignition_url=http://${HOST_SHORT}.${BASE_DOMAIN}/${CLUSTER}-${BOOTSTRAP_PREFIX}-0-append.ign ip=${BOOTSTRAP_IP}::${MACHINE_GW}:${MACHINE_NM}:${BOOTSTRAP_PREFIX}-0.${CLUSTER}.${BASE_DOMAIN}:ens192:none nameserver=${MACHINE_DNS1}"
+else
+  APPENDCONF=${APPENDBASE}" coreos.inst.ignition_url=http://${HOST_SHORT}.${BASE_DOMAIN}/${CLUSTER}-${BOOTSTRAP_PREFIX}-0-append.ign ip=dhcp"
+fi
 cat >>default <<EOF
 LABEL ${CLUSTER}-${BOOTSTRAP_PREFIX}-0
     KERNEL rhcos/${KERNEL}
-    APPEND rd.neednet=1 initrd=rhcos/${INITRD} console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.install_dev=sda coreos.inst.image_url=http://${HOST_SHORT}.${BASE_DOMAIN}/${IMAGE} coreos.inst.ignition_url=http://${HOST_SHORT}.${BASE_DOMAIN}/${CLUSTER}-${BOOTSTRAP_PREFIX}-0-append.ign ip=${BOOTSTRAP_IP}::${MACHINE_GW}:${MACHINE_NM}:${BOOTSTRAP_PREFIX}-0.${CLUSTER}.${BASE_DOMAIN}:ens192:none nameserver=${MACHINE_DNS1}
+    APPEND ${APPENDCONF}
 EOF
 
 # Add master entries to PXE boot file
 COUNT=0
 for i in $(echo $MASTER_IPS | tr -d '",'); do
 gen_append_ign_file master ${MASTER_PREFIX}-${COUNT} ${i}
+if [ "$BM_BOOT_STATIC" = "Y" ]; then
+  APPENDCONF=${APPENDBASE}" coreos.inst.ignition_url=http://${HOST_SHORT}.${BASE_DOMAIN}/${CLUSTER}-${MASTER_PREFIX}-${COUNT}-append.ign ip=${i}::${MACHINE_GW}:${MACHINE_NM}:${MASTER_PREFIX}-${COUNT}.${CLUSTER}.${BASE_DOMAIN}:ens192:none nameserver=${MACHINE_DNS1}"
+else
+  APPENDCONF=${APPENDBASE}" coreos.inst.ignition_url=http://${HOST_SHORT}.${BASE_DOMAIN}/${CLUSTER}-${MASTER_PREFIX}-${COUNT}-append.ign ip=dhcp"
+fi
 cat >>default <<EOF
 LABEL ${CLUSTER}-${MASTER_PREFIX}-${COUNT}
     KERNEL rhcos/${KERNEL}
-    APPEND rd.neednet=1 initrd=rhcos/${INITRD} console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.install_dev=sda coreos.inst.image_url=http://${HOST_SHORT}.${BASE_DOMAIN}/${IMAGE} coreos.inst.ignition_url=http://${HOST_SHORT}.${BASE_DOMAIN}/${CLUSTER}-${MASTER_PREFIX}-${COUNT}-append.ign ip=${i}::${MACHINE_GW}:${MACHINE_NM}:${MASTER_PREFIX}-${COUNT}.${CLUSTER}.${BASE_DOMAIN}:ens192:none nameserver=${MACHINE_DNS1}
+    APPEND ${APPENDCONF}
 EOF
 COUNT=$(($COUNT + 1))
 done
@@ -43,10 +55,15 @@ done
 COUNT=0
 for i in $(echo $WORKER_IPS | tr -d '",'); do
 gen_append_ign_file worker ${WORKER_PREFIX}-${COUNT} ${i}
+if [ "$BM_BOOT_STATIC" = "Y" ]; then
+  APPENDCONF=${APPENDBASE}" coreos.inst.ignition_url=http://${HOST_SHORT}.${BASE_DOMAIN}/${CLUSTER}-${WORKER_PREFIX}-${COUNT}-append.ign ip=${i}::${MACHINE_GW}:${MACHINE_NM}:${WORKER_PREFIX}-${COUNT}.${CLUSTER}.${BASE_DOMAIN}:ens192:none nameserver=${MACHINE_DNS1}"
+else
+  APPENDCONF=${APPENDBASE}" coreos.inst.ignition_url=http://${HOST_SHORT}.${BASE_DOMAIN}/${CLUSTER}-${WOKERR_PREFIX}-${COUNT}-append.ign ip=dhcp"
+fi
 cat >>default <<EOF
 LABEL ${CLUSTER}-${WORKER_PREFIX}-${COUNT}
     KERNEL rhcos/${KERNEL}
-    APPEND rd.neednet=1 initrd=rhcos/${INITRD} console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.install_dev=sda coreos.inst.image_url=http://${HOST_SHORT}.${BASE_DOMAIN}/${IMAGE} coreos.inst.ignition_url=http://${HOST_SHORT}.${BASE_DOMAIN}/${CLUSTER}-${WORKER_PREFIX}-${COUNT}-append.ign ip=${i}::${MACHINE_GW}:${MACHINE_NM}:${WORKER_PREFIX}-${COUNT}.${CLUSTER}.${BASE_DOMAIN}:ens192:none nameserver=${MACHINE_DNS1}
+    APPEND ${APPENDCONF}
 EOF
 COUNT=$(($COUNT + 1))
 done
