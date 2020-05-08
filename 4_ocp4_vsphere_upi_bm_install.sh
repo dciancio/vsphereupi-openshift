@@ -58,7 +58,7 @@ gen_append_ign_file worker ${WORKER_PREFIX}-${COUNT} ${i}
 if [ "$BM_BOOT_STATIC" = "Y" ]; then
   APPENDCONF=${APPENDBASE}" coreos.inst.ignition_url=http://${HOST_SHORT}.${BASE_DOMAIN}/${CLUSTER}-${WORKER_PREFIX}-${COUNT}-append.ign ip=${i}::${MACHINE_GW}:${MACHINE_NM}:${WORKER_PREFIX}-${COUNT}.${CLUSTER}.${BASE_DOMAIN}:ens192:none nameserver=${MACHINE_DNS1}"
 else
-  APPENDCONF=${APPENDBASE}" coreos.inst.ignition_url=http://${HOST_SHORT}.${BASE_DOMAIN}/${CLUSTER}-${WOKERR_PREFIX}-${COUNT}-append.ign ip=dhcp"
+  APPENDCONF=${APPENDBASE}" coreos.inst.ignition_url=http://${HOST_SHORT}.${BASE_DOMAIN}/${CLUSTER}-${WORKER_PREFIX}-${COUNT}-append.ign ip=dhcp"
 fi
 cat >>default <<EOF
 LABEL ${CLUSTER}-${WORKER_PREFIX}-${COUNT}
