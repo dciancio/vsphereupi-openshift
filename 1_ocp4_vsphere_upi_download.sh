@@ -20,8 +20,8 @@ rm -f terraform
 rm -f ${TERRAFORM}
 
 # Download JQ
-yum install http://fedora-epel.mirror.iweb.com/7/x86_64/Packages/j/jq-1.6-1.el7.x86_64.rpm \
-            http://fedora-epel.mirror.iweb.com/7/x86_64/Packages/o/oniguruma-5.9.5-3.el7.x86_64.rpm
+yum install http://fedora-epel.mirror.iweb.com/7/x86_64/Packages/j/jq-1.6-2.el7.x86_64.rpm \
+            http://fedora-epel.mirror.iweb.com/7/x86_64/Packages/o/oniguruma-6.8.2-1.el7.x86_64.rpm
 
 # Download client and installer binaries
 [ -f $CLIENT ] || curl -s -O https://mirror.openshift.com/pub/openshift-v4/clients/ocp/${RELEASE}/${CLIENT}
