@@ -6,6 +6,7 @@ source 0_ocp4_vsphere_upi_init_vars
 
 pushd $CLUSTER
 [ -d installer ] && rm -fr installer
+RHCOS=4.3
 git clone -b release-${RHCOS} https://github.com/openshift/installer
 sed -e "s|\${CLUSTER}|${CLUSTER}|g" ../terraform.tfvars.template >terraform.tfvars.$$
 sed -i -e "s|\${BASE_DOMAIN}|${BASE_DOMAIN}|g" terraform.tfvars.$$
