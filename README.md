@@ -6,7 +6,7 @@ Before executing:
 To install:
 - Run each shell script in order.
 - There are some "optional" scripts such as DNS and local registry configuration which are optional steps.
-- Normally, steps 1 - 6 would be the only steps needed to fully install a cluster.
-- Step 7 will destroy a provisioned cluster.
+- Normally, steps 1 - 8 would be the only steps needed to fully install a cluster.
 - Step 8 will allow you to perform a kubeadmin password reset, if needed.
+- Step 9 will destroy a provisioned cluster.
 
