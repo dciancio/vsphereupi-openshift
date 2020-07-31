@@ -6,9 +6,9 @@ source 0_ocp4_vsphere_upi_init_vars
 
 pushd $CLUSTER
 [ -d installer ] && rm -fr installer
-RHCOS=4.3
-git clone -b release-${RHCOS} https://github.com/openshift/installer
-sed -e "s|\${CLUSTER}|${CLUSTER}|g" ../terraform.tfvars.template >terraform.tfvars.$$
+cp -r ../installer .
+pushd installer
+sed -e "s|\${CLUSTER}|${CLUSTER}|g" terraform.tfvars.template >terraform.tfvars.$$
 sed -i -e "s|\${BASE_DOMAIN}|${BASE_DOMAIN}|g" terraform.tfvars.$$
 sed -i -e "s|\${GOVC_URL}|${GOVC_URL}|" terraform.tfvars.$$
 sed -i -e "s|\${GOVC_USERNAME}|${GOVC_USERNAME}|" terraform.tfvars.$$
@@ -19,35 +19,38 @@ sed -i -e "s|\${GOVC_DATASTORE}|${GOVC_DATASTORE}|" terraform.tfvars.$$
 sed -i -e "s|\${RHCOS_TEMPLATE}|${RHCOS_TEMPLATE}|" terraform.tfvars.$$
 sed -i -e "s|\${GOVC_NETWORK}|${GOVC_NETWORK}|" terraform.tfvars.$$
 sed -i -e "s|\${MACHINE_CIDR}|${MACHINE_CIDR}|" terraform.tfvars.$$
+sed -i -e "s|\${MACHINE_GW}|${MACHINE_GW}|" terraform.tfvars.$$
+sed -i -e "s|\${MACHINE_DNS1}|${MACHINE_DNS1}|" terraform.tfvars.$$
+sed -i -e "s|\${MACHINE_DNS2}|${MACHINE_DNS2}|" terraform.tfvars.$$
 sed -i -e "s|\${MASTER_COUNT}|${MASTER_COUNT}|" terraform.tfvars.$$
 sed -i -e "s|\${WORKER_COUNT}|${WORKER_COUNT}|" terraform.tfvars.$$
+sed -i -e "s|\${BOOTSTRAP_PREFIX}|${BOOTSTRAP_PREFIX}|" terraform.tfvars.$$
 sed -i -e "s|\${BOOTSTRAP_IP}|${BOOTSTRAP_IP}|" terraform.tfvars.$$
+sed -i -e "s|\${BOOTSTRAP_CPU}|${BOOTSTRAP_CPU}|" terraform.tfvars.$$
+sed -i -e "s|\${BOOTSTRAP_MEM}|${BOOTSTRAP_MEM}|" terraform.tfvars.$$
+sed -i -e "s|\${BOOTSTRAP_DISK}|${BOOTSTRAP_DISK}|" terraform.tfvars.$$
+sed -i -e "s|\${MASTER_PREFIX}|${MASTER_PREFIX}|" terraform.tfvars.$$
 sed -i -e "s|\${MASTER_IPS}|${MASTER_IPS}|" terraform.tfvars.$$
+sed -i -e "s|\${MASTER_CPU}|${MASTER_CPU}|" terraform.tfvars.$$
+sed -i -e "s|\${MASTER_MEM}|${MASTER_MEM}|" terraform.tfvars.$$
+sed -i -e "s|\${MASTER_DISK}|${MASTER_DISK}|" terraform.tfvars.$$
+sed -i -e "s|\${WORKER_PREFIX}|${WORKER_PREFIX}|" terraform.tfvars.$$
 sed -i -e "s|\${WORKER_IPS}|${WORKER_IPS}|" terraform.tfvars.$$
+sed -i -e "s|\${WORKER_CPU}|${WORKER_CPU}|" terraform.tfvars.$$
+sed -i -e "s|\${WORKER_MEM}|${WORKER_MEM}|" terraform.tfvars.$$
+sed -i -e "s|\${WORKER_DISK}|${WORKER_DISK}|" terraform.tfvars.$$
 sed -i -e "s|\${HOST_SHORT}|${HOST_SHORT}|" terraform.tfvars.$$
-awk '/^END_OF_MASTER_IGNITION/{while(getline line<"master.ign"){print line}} //' terraform.tfvars.$$ >terraform.tfvars.$$.1
-awk '/^END_OF_WORKER_IGNITION/{while(getline line<"worker.ign"){print line}} //' terraform.tfvars.$$.1 >installer/upi/vsphere/terraform.tfvars
+awk '/^END_OF_MASTER_IGNITION/{while(getline line<"../master.ign"){print line}} //' terraform.tfvars.$$ >terraform.tfvars.$$.1
+awk '/^END_OF_WORKER_IGNITION/{while(getline line<"../worker.ign"){print line}} //' terraform.tfvars.$$.1 >terraform.tfvars
 rm -f terraform.tfvars.$$*
+rm -f terraform.tfvars.template
 
-sed -i -e "s|gw   = \"\${cidrhost(var.machine_cidr,1)}\"|gw   = \"${MACHINE_GW}\"|" installer/upi/vsphere/machine/ignition.tf
-sed -i -e "s|DNS1=1.1.1.1|DNS1=${MACHINE_DNS1}|" installer/upi/vsphere/machine/ignition.tf
-sed -i -e "s|DNS2=9.9.9.9|DNS2=${MACHINE_DNS2}|" installer/upi/vsphere/machine/ignition.tf
-sed -i -e 's|properties {|properties = {|' installer/upi/vsphere/machine/main.tf
-sed -i -e '/module "dns"/i \
-\/*' installer/upi/vsphere/main.tf
-sed -i -e '$a\
-*\/' installer/upi/vsphere/main.tf
-sed -i -e "s|name             = \"bootstrap\"|name             = \"${BOOTSTRAP_PREFIX}\"|" installer/upi/vsphere/main.tf
-sed -i -e "s|name             = \"control-plane\"|name             = \"${MASTER_PREFIX}\"|" installer/upi/vsphere/main.tf
-sed -i -e "s|name             = \"compute\"|name             = \"${WORKER_PREFIX}\"|" installer/upi/vsphere/main.tf
-
-pushd installer/upi/vsphere
 terraform init
 terraform apply -auto-approve
 if [ $? -ne 0 ]; then
   echo "ERROR:  Terraform resource creation step failed!  Please check the terraform output for more details." >&2
 else
-  openshift-install --dir ../../../../$CLUSTER wait-for bootstrap-complete --log-level debug
+  openshift-install --dir ../../$CLUSTER wait-for bootstrap-complete --log-level debug
   if [ $? -ne 0 ]; then
     echo "ERROR:  Bootstrap process failed!  Please investigate bootkube.service log on bootstrap node." >&2
   else

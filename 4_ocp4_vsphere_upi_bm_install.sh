@@ -83,14 +83,14 @@ govc pool.create   /${GOVC_DATACENTER}/host/${GOVC_CLUSTER}/Resources/${CLUSTER}
 govc folder.create /${GOVC_DATACENTER}/vm/${CLUSTER}
 
 # Create bootstrap VM
-govc vm.create -m=8192 -c=4 -g=coreos64Guest -net.adapter=vmxnet3 -net=${GOVC_NETWORK} -disk.controller=pvscsi -disk=60GB -on=false -pool=/${GOVC_DATACENTER}/host/${GOVC_CLUSTER}/Resources/${CLUSTER} -folder=/${GOVC_DATACENTER}/vm/${CLUSTER} ${BOOTSTRAP_PREFIX}-0
+govc vm.create -m=${BOOTSTRAP_MEM} -c=${BOOTSTRAP_CPU} -g=coreos64Guest -net.adapter=vmxnet3 -net=${GOVC_NETWORK} -disk.controller=pvscsi -disk=${BOOTSTRAP_DISK}GB -on=false -pool=/${GOVC_DATACENTER}/host/${GOVC_CLUSTER}/Resources/${CLUSTER} -folder=/${GOVC_DATACENTER}/vm/${CLUSTER} ${BOOTSTRAP_PREFIX}-0
 govc vm.change -e="disk.enableUUID=1" -vm="/${GOVC_DATACENTER}/vm/${CLUSTER}/${BOOTSTRAP_PREFIX}-0"
 govc vm.power -on=true /${GOVC_DATACENTER}/vm/${CLUSTER}/${BOOTSTRAP_PREFIX}-0
 
 # Create master VMs
 for i in $(seq 1 ${MASTER_COUNT}); do
   COUNT=$(($i - 1))
-  govc vm.create -m=16384 -c=4 -g=coreos64Guest -net.adapter=vmxnet3 -net=${GOVC_NETWORK} -disk.controller=pvscsi -disk=60GB -on=false -pool=/${GOVC_DATACENTER}/host/${GOVC_CLUSTER}/Resources/${CLUSTER} -folder=/${GOVC_DATACENTER}/vm/${CLUSTER} ${MASTER_PREFIX}-${COUNT}
+  govc vm.create -m=${MASTER_MEM} -c=${MASTER_CPU} -g=coreos64Guest -net.adapter=vmxnet3 -net=${GOVC_NETWORK} -disk.controller=pvscsi -disk=${MASTER_DISK}GB -on=false -pool=/${GOVC_DATACENTER}/host/${GOVC_CLUSTER}/Resources/${CLUSTER} -folder=/${GOVC_DATACENTER}/vm/${CLUSTER} ${MASTER_PREFIX}-${COUNT}
   govc vm.change -e="disk.enableUUID=1" -vm="/${GOVC_DATACENTER}/vm/${CLUSTER}/${MASTER_PREFIX}-${COUNT}"
   govc vm.power -on=true /${GOVC_DATACENTER}/vm/${CLUSTER}/${MASTER_PREFIX}-${COUNT}
 done
@@ -98,7 +98,7 @@ done
 # Create worker VMs
 for i in $(seq 1 ${WORKER_COUNT}); do
   COUNT=$(($i - 1))
-  govc vm.create -m=8192 -c=4 -g=coreos64Guest -net.adapter=vmxnet3 -net=${GOVC_NETWORK} -disk.controller=pvscsi -disk=60GB -on=false -pool=/${GOVC_DATACENTER}/host/${GOVC_CLUSTER}/Resources/${CLUSTER} -folder=/${GOVC_DATACENTER}/vm/${CLUSTER} ${WORKER_PREFIX}-${COUNT}
+  govc vm.create -m=${WORKER_MEM} -c=${WORKER_CPU} -g=coreos64Guest -net.adapter=vmxnet3 -net=${GOVC_NETWORK} -disk.controller=pvscsi -disk=${WORKER_DISK}GB -on=false -pool=/${GOVC_DATACENTER}/host/${GOVC_CLUSTER}/Resources/${CLUSTER} -folder=/${GOVC_DATACENTER}/vm/${CLUSTER} ${WORKER_PREFIX}-${COUNT}
   govc vm.change -e="disk.enableUUID=1" -vm="/${GOVC_DATACENTER}/vm/${CLUSTER}/${WORKER_PREFIX}-${COUNT}"
   govc vm.power -on=true /${GOVC_DATACENTER}/vm/${CLUSTER}/${WORKER_PREFIX}-${COUNT}
 done

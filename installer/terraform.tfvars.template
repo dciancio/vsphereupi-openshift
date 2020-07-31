@@ -35,34 +35,65 @@ vm_network = "${GOVC_NETWORK}"
 // Additionally, IPAM will assign IPs based on the network ID. 
 machine_cidr = "${MACHINE_CIDR}"
 
+// Name of the machine gateway.
+machine_gateway = "${MACHINE_GW}"
+
+// Name of the machine DNS servers.
+machine_dns1 = "${MACHINE_DNS1}"
+machine_dns2 = "${MACHINE_DNS2}"
+
 // The number of control plane VMs to create. Default is 3.
 control_plane_count = ${MASTER_COUNT}
 
 // The number of compute VMs to create. Default is 3.
 compute_count = ${WORKER_COUNT}
 
-// Set ipam and ipam_token if you want to use the IPAM server to reserve IP
-// addresses for the VMs.
-
-// Address or hostname of the IPAM server from which to reserve IP addresses for the cluster machines.
-ipam = "139.178.89.254"
-
-// Token to use to authenticate with the IPAM server.
-ipam_token = "TOKEN_FOR_THE_IPAM_SERVER"
-
-// Set bootstrap_ip, control_plane_ip, and compute_ip if you want to use static
-// IPs reserved someone else, rather than the IPAM server.
+// The name prefix of the bootstrap VM.
+bootstrap_prefix = "${BOOTSTRAP_PREFIX}"
 
 // The IP address to assign to the bootstrap VM.
 bootstrap_ip = "${BOOTSTRAP_IP}"
+
+// The disk size to assign to the bootstrap VM.
+bootstrap_disk = "${BOOTSTRAP_DISK}"
+
+// The memory size to assign to the bootstrap VM.
+bootstrap_mem = "${BOOTSTRAP_MEM}"
+
+// The cpu size to assign to the bootstrap VM.
+bootstrap_cpu = "${BOOTSTRAP_CPU}"
+
+// The name prefix of the control plane VMs.
+control_plane_prefix = "${MASTER_PREFIX}"
 
 // The IP addresses to assign to the control plane VMs. The length of this list
 // must match the value of control_plane_count.
 control_plane_ips = [${MASTER_IPS}]
 
+// The disk size to assign to the control plane VM.
+control_plane_disk = "${MASTER_DISK}"
+
+// The memory size to assign to the control plane VM.
+control_plane_mem = "${MASTER_MEM}"
+
+// The cpu size to assign to the control plane VM.
+control_plane_cpu = "${MASTER_CPU}"
+
+// The name prefix of the compute VMs.
+compute_prefix = "${WORKER_PREFIX}"
+
 // The IP addresses to assign to the compute VMs. The length of this list must
 // match the value of compute_count.
 compute_ips = [${WORKER_IPS}]
+
+// The disk size to assign to the compute VM.
+compute_disk = "${WORKER_DISK}"
+
+// The memory size to assign to the compute VM.
+compute_mem = "${WORKER_MEM}"
+
+// The cpu size to assign to the compute VM.
+compute_cpu = "${WORKER_CPU}"
 
 // URL of the bootstrap ignition. This needs to be publicly accessible so that the bootstrap machine can pull the ignition.
 bootstrap_ignition_url = "http://${HOST_SHORT}.${BASE_DOMAIN}/${CLUSTER}-bootstrap.ign"

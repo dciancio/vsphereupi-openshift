@@ -15,18 +15,27 @@ export BOOTSTRAP_DISABLE_DNS="N"
 
 export BOOTSTRAP_PREFIX="bootstrap"
 export BOOTSTRAP_IP='10.37.198.20'
+export BOOTSTRAP_CPU=4
+export BOOTSTRAP_MEM=8192
+export BOOTSTRAP_DISK=60
 export MASTER_PREFIX="master"
 export MASTER_COUNT=3
 export MASTER_IPS='"10.37.198.21", "10.37.198.22", "10.37.198.23"'
+export MASTER_CPU=4
+export MASTER_MEM=16384
+export MASTER_DISK=60
 export WORKER_PREFIX="worker"
 export WORKER_COUNT=3
 export WORKER_IPS='"10.37.198.24", "10.37.198.25", "10.37.198.26"'
+export WORKER_CPU=4
+export WORKER_MEM=8192
+export WORKER_DISK=60
 
 export NAMED_ZONE="<bind/named_zone_file_name>"
 
 export HOST_SHORT=$(hostname -s)
 
-export TERRAFORM_VER="0.11.14"
+export TERRAFORM_VER="0.12.24"
 export GOVC_VER="v0.22.1"
 #export RELEASE=latest
 export RELEASE=4.2.18
