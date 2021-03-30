@@ -1,7 +1,7 @@
 # vsphereupi-openshift
 
 Pre-Requisites:
-- Clone this repo down your infra/helper host (running DNS/DHCP/PXE) and run scripts locally there.
+- Clone repo to the infra/helper host (running DNS/DHCP/PXE) and run scripts locally there.
 - Installation supports configuring static IPs and will inject them via ignition configuration.
 
 Before executing:
