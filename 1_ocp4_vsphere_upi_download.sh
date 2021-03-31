@@ -39,7 +39,7 @@ curl -s -L https://github.com/vmware/govmomi/releases/download/${GOVC_VER}/govc_
 chmod +x /usr/local/bin/govc
 
 # Download RHCOS ova image
-for i in $(curl -s --list-only https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/${RHCOS}/latest/ | egrep "\-vmware" | grep href | sed 's/.*href="//' | sed 's/".*//' | grep '^[a-zA-Z].*'); do
+for i in $(curl -s --list-only https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/${RHCOS}/latest/ | egrep "rhcos-${RHCOS}(.*)-vmware" | grep href | sed 's/.*href="//' | sed 's/".*//' | grep '^[a-zA-Z].*'); do
   curl -s -O https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/${RHCOS}/latest/$i
   govc vm.destroy /${GOVC_DATACENTER}/vm/${RHCOS_TEMPLATE}
   govc import.ova -name=${RHCOS_TEMPLATE} $i
@@ -47,7 +47,7 @@ done
 rm -f rhcos-${RHCOS}*
 
 # Download RHCOS bare-metal image
-for i in $(curl -s --list-only https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/${RHCOS}/latest/ | egrep "\-installer|\-metal" | grep href | sed 's/.*href="//' | sed 's/".*//' | grep '^[a-zA-Z].*'); do
+for i in $(curl -s --list-only https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/${RHCOS}/latest/ | egrep "rhcos-${RHCOS}(.*)-${INSTPREFIX}|rhcos-${RHCOS}(.*)-metal" | grep href | sed 's/.*href="//' | sed 's/".*//' | grep '^[a-zA-Z].*'); do
   curl -s -O https://mirror.openshift.com/pub/openshift-v4/dependencies/rhcos/${RHCOS}/latest/$i
 done
 if [ ! -d /var/www/html ]; then
@@ -64,7 +64,8 @@ else
   else
     mkdir -p /var/lib/tftpboot/rhcos
     rm -f /var/lib/tftpboot/rhcos/rhcos-${RHCOS}*
-    cp /var/www/html/rhcos-${RHCOS}*-installer-initramfs*.img /var/www/html/rhcos-${RHCOS}*-installer-kernel* /var/lib/tftpboot/rhcos
+    cp /var/www/html/rhcos-${RHCOS}*-${INSTPREFIX}-initramfs*.img /var/www/html/rhcos-${RHCOS}*-${INSTPREFIX}-kernel* /var/lib/tftpboot/rhcos
+    rm -f /var/www/html/rhcos-${RHCOS}*-${INSTPREFIX}-initramfs*.img /var/www/html/rhcos-${RHCOS}*-${INSTPREFIX}-kernel*
   fi
 fi
 

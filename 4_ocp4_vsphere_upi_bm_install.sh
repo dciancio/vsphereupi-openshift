@@ -6,8 +6,9 @@
 
 source 0_ocp4_vsphere_upi_init_vars
 
-KERNEL=$(basename `ls /var/lib/tftpboot/rhcos/rhcos-${RHCOS}*-installer-kernel* | sort | tail -1`)
-INITRD=$(basename `ls /var/lib/tftpboot/rhcos/rhcos-${RHCOS}*-installer-initramfs* | sort | tail -1`)
+KERNEL=$(basename `ls /var/lib/tftpboot/rhcos/rhcos-${RHCOS}*-${INSTPREFIX}-kernel* | sort | tail -1`)
+INITRD=$(basename `ls /var/lib/tftpboot/rhcos/rhcos-${RHCOS}*-${INSTPREFIX}-initramfs* | sort | tail -1`)
+ROOTFS=$(basename `ls /var/www/html/rhcos-${RHCOS}*-${INSTPREFIX}-rootfs* | sort | tail -1`)
 IMAGE=$(basename `ls /var/www/html/rhcos-${RHCOS}*-metal* | sort | tail -1`)
 
 # Generate PXE boot file
@@ -19,7 +20,11 @@ PROMPT 0
 
 EOF
 
+if [ "${INSTPREFIX}" = "installer" ]; then
 APPENDBASE="rd.neednet=1 initrd=rhcos/${INITRD} console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.install_dev=sda coreos.inst.image_url=http://${HOST_SHORT}.${BASE_DOMAIN}/${IMAGE} coreos.no_persist_ip=1"
+else
+APPENDBASE="rd.neednet=1 initrd=rhcos/${INITRD} console=tty0 console=ttyS0 coreos.inst=yes coreos.inst.install_dev=sda coreos.live.rootfs_url=http://${HOST_SHORT}.${BASE_DOMAIN}/${ROOTFS} coreos.no_persist_ip=1"
+fi
 
 # Add bootstrap entries to PXE boot file
 gen_append_ign_file bootstrap ${BOOTSTRAP_PREFIX}-0 ${BOOTSTRAP_IP}
