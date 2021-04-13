@@ -39,6 +39,8 @@ podman stop poc-registry
 podman start poc-registry
 
 rm -f /etc/pki/ca-trust/source/anchors/domain.crt
+update-ca-trust extract
+
 cp ${REG_CERT}/domain.crt /etc/pki/ca-trust/source/anchors/
 update-ca-trust extract
 

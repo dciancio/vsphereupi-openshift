@@ -61,10 +61,11 @@ export GOVC_CLUSTER='<vsphere_cluster_name>'
 export GOVC_DATASTORE='<vsphere_datastore_name>'
 export GOVC_INSECURE=1 # If the host above uses a self-signed cert
 
+export GODEBUG=x509ignoreCN=0
 export REG_AUTH="${PWD}/opt/registry/auth"
 export REG_CERT="${PWD}/opt/registry/certs"
 export REG_DATA="${PWD}/opt/registry/data"
-export REG_CERT_SUBJ="/C=US/ST=NC/L=Raleigh/O=GCS/CN=${HOST_SHORT}.${BASE_DOMAIN}"
+export REG_CERT_SUBJ="/C=US/ST=NC/L=Raleigh/O=GCS/OU=TAM/CN=${HOST_SHORT}.${BASE_DOMAIN}"
 export REG_CERT_DAYS=365
 export LOCAL_REG="${HOST_SHORT}.${BASE_DOMAIN}:5000"
 export LOCAL_REPO="ocp4"
