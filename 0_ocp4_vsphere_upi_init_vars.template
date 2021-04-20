@@ -68,7 +68,7 @@ export REG_DATA="${PWD}/opt/registry/data"
 export REG_CERT_SUBJ="/C=US/ST=NC/L=Raleigh/O=GCS/OU=TAM/CN=${HOST_SHORT}.${BASE_DOMAIN}"
 export REG_CERT_DAYS=365
 export LOCAL_REG="${HOST_SHORT}.${BASE_DOMAIN}:5000"
-export LOCAL_REPO="ocp4"
+export LOCAL_REPO="${CLUSTER}-ocp4"
 export LOCAL_SECRET_JSON="pull-secret-2.json"
 export LOCAL_REG_USER="dummy"
 export LOCAL_REG_PWD="dummy"
